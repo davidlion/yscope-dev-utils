@@ -103,6 +103,12 @@ tasks:
     internal: true
     label: "{{.TASK}}:{{.BUILD_DIR}}-{{.INSTALL_PREFIX}}-{{.EXTRA_ARGS}}"
     vars:
+      ABSOLUTE_INSTALL_PREFIX: >-
+        {{- if osIsAbs .INSTALL_PREFIX -}}
+          {{.INSTALL_PREFIX}}
+        {{- else -}}
+          {{.USER_WORKING_DIR}}/{{.INSTALL_PREFIX}}
+        {{- end}}
       CMAKE_SETTINGS_DIR: >-
         {{default "" .CMAKE_SETTINGS_DIR}}
       EXTRA_ARGS:
@@ -121,14 +127,14 @@ tasks:
       - >-
         cmake
         --install "{{.BUILD_DIR}}"
-        --prefix "{{.INSTALL_PREFIX}}"
+        --prefix "{{.ABSOLUTE_INSTALL_PREFIX}}"
         {{- range .EXTRA_ARGS}}
         {{.}}
         {{- end}}
       - >-
         {{- if .CMAKE_SETTINGS_DIR}}
           echo "set({{.CMAKE_PACKAGE_NAME}}_ROOT
-            \"{{.INSTALL_PREFIX}}\"
+            \"{{.ABSOLUTE_INSTALL_PREFIX}}\"
             CACHE PATH
             \"Package root for {{.CMAKE_PACKAGE_NAME}}.\"
           )" >> "{{.CMAKE_SETTINGS_DIR}}/{{.CMAKE_PACKAGE_NAME}}.cmake"
